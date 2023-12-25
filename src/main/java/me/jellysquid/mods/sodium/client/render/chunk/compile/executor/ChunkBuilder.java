@@ -3,22 +3,20 @@ package me.jellysquid.mods.sodium.client.render.chunk.compile.executor;
 import me.jellysquid.mods.sodium.client.SodiumClientMod;
 import me.jellysquid.mods.sodium.client.render.chunk.compile.ChunkBuildContext;
 import me.jellysquid.mods.sodium.client.render.chunk.compile.tasks.ChunkBuilderTask;
-import me.jellysquid.mods.sodium.client.render.chunk.vertex.format.ChunkVertexType;
 import me.jellysquid.mods.sodium.client.util.task.CancellationToken;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.Validate;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 public class ChunkBuilder {
-    static final Logger LOGGER = LogManager.getLogger("ChunkBuilder");
+    private static final Logger LOGGER = LoggerFactory.getLogger("ChunkBuilder");
 
     private final ChunkJobQueue queue = new ChunkJobQueue();
 
@@ -37,6 +35,7 @@ public class ChunkBuilder {
 
             Thread thread = new Thread(worker, "Chunk Render Task Executor #" + i);
             thread.setPriority(Math.max(0, Thread.NORM_PRIORITY - 2));
+            thread.setDaemon(true);
             thread.start();
 
             this.threads.add(thread);
@@ -65,7 +64,8 @@ public class ChunkBuilder {
      */
     public void shutdown() {
         if (!this.queue.isRunning()) {
-            throw new IllegalStateException("Worker threads are not running");
+            LOGGER.info("Worker threads are not running");
+            return;
         }
 
         // Delete any queued tasks and resources attached to them
@@ -81,6 +81,9 @@ public class ChunkBuilder {
     private void shutdownThreads() {
         LOGGER.info("Stopping worker threads");
 
+        // Wake up all worker threads to start shutting down
+        this.queue.shutdown();
+
         // Wait for every remaining thread to terminate
         for (Thread thread : this.threads) {
             try {
@@ -92,7 +95,7 @@ public class ChunkBuilder {
     }
 
     public <TASK extends ChunkBuilderTask<OUTPUT>, OUTPUT> ChunkJobTyped<TASK, OUTPUT> scheduleTask(TASK task, boolean important,
-                                                                                                    Consumer<ChunkJobResult<OUTPUT>> consumer)
+                                                                                                             Consumer<ChunkJobResult<OUTPUT>> consumer)
     {
         Validate.notNull(task, "Task must be non-null");
 
