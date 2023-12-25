@@ -55,19 +55,4 @@ public class SodiumRenderer implements Renderer {
 
         return false;
     }
-
-    /**
-     * Optimizes the renderer for Mali-G57 devices.
-     */
-    public void optimizeForMaliG57() {
-        // Use 16-bit floats for shaders and textures where possible.
-        this.materialFinder().setShaderPrecision(RenderMaterial.ShaderPrecision.FP16);
-        this.materialFinder().setTexturePrecision(RenderMaterial.TexturePrecision.FP16);
-
-        // Use ARM NEON intrinsics for vectorized operations.
-        this.materialFinder().setShaderOptimizationFlags(RenderMaterial.ShaderOptimizationFlag.USE_NEON);
-
-        // Optimize for Bifrost architecture.
-        this.materialFinder().setShaderOptimizationFlags(RenderMaterial.ShaderOptimizationFlag.OPTIMIZE_FOR_BIFROST);
-    }
 }
