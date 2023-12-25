@@ -3,6 +3,7 @@ package me.jellysquid.mods.sodium.client.render.chunk.compile.executor;
 import me.jellysquid.mods.sodium.client.SodiumClientMod;
 import me.jellysquid.mods.sodium.client.render.chunk.compile.ChunkBuildContext;
 import me.jellysquid.mods.sodium.client.render.chunk.compile.tasks.ChunkBuilderTask;
+import me.jellysquid.mods.sodium.client.render.chunk.vertex.format.ChunkVertexType;
 import me.jellysquid.mods.sodium.client.util.task.CancellationToken;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.MathHelper;
